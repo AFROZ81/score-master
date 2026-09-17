@@ -134,7 +134,7 @@ export default function PlayersPage({ currentUser, onModalStateChange }: Players
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3 min-w-0">
-                    <div className="w-11 h-11 rounded-2xl bg-linear-to-tr from-blue-700 to-indigo-600 text-white font-black text-sm flex items-center justify-center shadow-sm shrink-0 border border-white/20">
+                    <div className="w-8 h-8 rounded-2xl bg-linear-to-tr from-blue-700 to-indigo-600 text-white font-black text-sm flex items-center justify-center shadow-sm shrink-0 border border-white/20">
                       {player.firstName.charAt(0)}{player.lastName.charAt(0)}
                     </div>
                     <div className="min-w-0">
@@ -143,7 +143,6 @@ export default function PlayersPage({ currentUser, onModalStateChange }: Players
                           {player.firstName} {player.lastName}
                         </h3>
                       </div>
-                      <p className="text-xs text-blue-600 dark:text-blue-400 font-medium truncate">@{player.username}</p>
                     </div>
                   </div>
 

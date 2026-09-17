@@ -404,7 +404,7 @@ export default function TeamsPage({
                                   {p.firstName} {p.lastName}
                                 </p>
                                 <span className="text-[10px] text-gray-500 dark:text-slate-400">
-                                  @{p.username} • <span className="font-semibold text-blue-600 dark:text-blue-400">{p.playerType}</span>
+                                  <span className="font-semibold text-blue-600 dark:text-blue-400">{p.playerType}</span>
                                 </span>
                               </div>
                             </div>

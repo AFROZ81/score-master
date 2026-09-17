@@ -106,7 +106,6 @@ export default function PlayerDetailModal({ player, isOpen, onClose }: PlayerDet
               <h2 className="text-xl font-black tracking-tight truncate leading-snug">
                 {player.firstName} {player.lastName}
               </h2>
-              <p className="text-blue-200 text-sm font-medium truncate">@{player.username}</p>
               <div className="pt-0.5">
                 <span className="inline-flex items-center gap-1 px-2.5 py-0.5 bg-blue-500/30 text-blue-100 border border-blue-300/30 rounded-full text-xs font-semibold tracking-wide">
                   <span>{getPlayerTypeEmoji(player.playerType)}</span> {player.playerType}
