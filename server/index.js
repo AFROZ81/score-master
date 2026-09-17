@@ -1,7 +1,5 @@
 import express from 'express';
 import cors from 'cors';
-import path from 'path';
-import { fileURLToPath } from 'url';
 import { MongoClient } from 'mongodb';
 import { scoringEngine } from './services/scoringEngine.js';
 import { statsSyncService } from './services/statsSyncService.js';
@@ -9,10 +7,6 @@ import { MatchModel, PlayerModel, TeamModel } from './models/index.js';
 import dotenv from 'dotenv';
 
 dotenv.config();
-
-// ES module equivalent of __dirname
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 const app = express();
 const PORT = process.env.PORT;
@@ -22,11 +16,6 @@ const DB_NAME = process.env.DB_NAME;
 // Middleware
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
-
-// Serve static files from client dist folder
-const clientDistPath = path.resolve(__dirname, '../client/dist');
-console.log('Serving static files from:', clientDistPath);
-app.use(express.static(clientDistPath));
 
 // MongoDB connection
 let db;
@@ -1284,19 +1273,6 @@ app.get('/api/teams/:id', async (req, res) => {
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
   }
-});
-
-// ═══════════════════════════════════════════════
-// CLIENT-SIDE ROUTING SUPPORT
-// ═══════════════════════════════════════════════
-
-// Catch-all route for client-side routing - serve index.html for all non-API routes
-app.get('*', (req, res) => {
-  // Skip API routes - return 404 for undefined API endpoints
-  if (req.path.startsWith('/api')) {
-    return res.status(404).json({ success: false, error: 'API endpoint not found' });
-  }
-  res.sendFile(path.resolve(clientDistPath, 'index.html'));
 });
 
 // ═══════════════════════════════════════════════
