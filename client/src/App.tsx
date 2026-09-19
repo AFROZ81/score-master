@@ -169,6 +169,11 @@ function App() {
     return () => window.removeEventListener('popstate', handlePopState);
   }, [currentUser, navigateToView]);
 
+  // Scroll to top instantly without animation on any view navigation or match selection across the app
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [currentView, selectedMatchId]);
+
   // Sync initial URL path on mount
   useEffect(() => {
     const expectedPath = VIEW_TO_PATH[currentView] || '/';
@@ -304,11 +309,12 @@ function App() {
   const isTeamFormView = currentView === 'teams' && isCreateTeamMode;
   const isPlayerModalView = currentView === 'players' && isPlayerDetailOpen;
   const isTeamModalView = currentView === 'teams' && isTeamDetailOpen;
+  const isMatchDetailView = (currentView === 'live' && selectedMatchId !== null) || currentView === 'scorecard' || currentView === 'commentary';
   const isHeroView = currentView === 'hero';
   const isAuthView = currentView === 'auth' || !currentUser;
   const showHeader = currentView !== 'create' && currentView !== 'hero' && currentUser !== null;
-  // Hide bottom navbar while scoring, during team creation/editing, when player/team details modal is open, on hero page, AND during authentication stage
-  const showBottomNav = !isScoringView && !isTeamFormView && !isPlayerModalView && !isTeamModalView && !isHeroView && !isAuthView && currentUser !== null;
+  // Hide bottom navbar while scoring, inside match details, during team creation, when player/team details modal is open, on hero page, AND during auth
+  const showBottomNav = !isScoringView && !isTeamFormView && !isPlayerModalView && !isTeamModalView && !isMatchDetailView && !isHeroView && !isAuthView && currentUser !== null;
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-slate-950 text-gray-900 dark:text-slate-100 max-w-md mx-auto relative transition-colors duration-300">
@@ -351,7 +357,7 @@ function App() {
         </div>
       )}
 
-      <main className={isScoringView || isTeamFormView || isPlayerModalView || isTeamModalView || isHeroView || isAuthView ? '' : 'pb-20'}>
+      <main className={isScoringView || isTeamFormView || isPlayerModalView || isTeamModalView || isMatchDetailView || isHeroView || isAuthView ? '' : 'pb-20'}>
         {currentView === 'hero' && (
           <HeroPage
             onNavigateAuth={() => navigateToView('auth')}

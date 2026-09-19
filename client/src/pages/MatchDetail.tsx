@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Match, Innings } from '../types';
 import MatchCard from '../components/MatchCard';
 import BattingCard from '../components/BattingCard';
@@ -30,14 +30,37 @@ export default function MatchDetail({
   // Status tab state for match list view
   const [activeStatusTab, setActiveStatusTab] = useState<StatusTab>('live');
 
-  // Detail section tab state for a selected match
-  const [activeDetailTab, setActiveDetailTab] = useState<DetailTab>(() => {
+  // Helper to determine initial detail tab based on match status and explicit props
+  const getDefaultDetailTab = (m: Match | null): DetailTab => {
     if (showFullScorecard) return 'scorecard';
     if (showCommentary) return 'commentary';
+    if (!m) return 'info';
+    if (m.status === 'completed') return 'summary';
+    if (m.status === 'live') return 'commentary';
+    if (m.status === 'upcoming' || m.status === 'abandoned') return 'info';
     return 'info';
-  });
+  };
+
+  // Detail section tab state for a selected match
+  const [activeDetailTab, setActiveDetailTab] = useState<DetailTab>(() => getDefaultDetailTab(match));
 
   const [activeInnings, setActiveInnings] = useState(0);
+
+  // When selected match changes, set default tab based on match status & scroll to top
+  useEffect(() => {
+    window.scrollTo(0, 0);
+    setActiveDetailTab(getDefaultDetailTab(match));
+  }, [match?.id, match?.status]);
+
+  // Scroll to top instantly when changing status tabs in match list view
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [activeStatusTab]);
+
+  // Scroll to top instantly when changing detail tabs in match detail view
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [activeDetailTab]);
 
   // -------------------------------------------------------------
   // VIEW 1: MATCHES LIST VIEW (When no specific match is selected)
@@ -237,7 +260,7 @@ export default function MatchDetail({
 
       {/* Innings Tabs - Only show when match has multiple innings and viewing relevant tabs */}
       {showInningsTabs && inningsList.length > 1 && (
-        <div className="flex bg-white dark:bg-slate-900 border-b border-gray-200 dark:border-slate-800 sticky top-27 z-10 shadow-xs overflow-x-auto scrollbar-hide">
+        <div className="flex bg-white dark:bg-slate-900 border-b border-gray-200 dark:border-slate-800 sticky top-24 z-10 shadow-xs overflow-x-auto scrollbar-hide">
           {inningsList.map((innings, idx) => {
             const team = getBattingTeam(innings);
             const isSO = innings.isSuperOver || idx >= 2;

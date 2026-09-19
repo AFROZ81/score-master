@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { PlayerType, RegisteredPlayer } from '../types';
 import { playerAPI } from '../services/api';
 import { User, Lock, CheckCircle, AlertCircle, Search, LogIn, UserPlus, Eye, EyeOff } from 'lucide-react';
+import StadiumAssemblyLoader from '../components/StadiumAssemblyLoader';
 
 interface AuthenticationProps {
   onSuccess: (player: RegisteredPlayer, rememberMe?: boolean) => void;
@@ -9,6 +10,13 @@ interface AuthenticationProps {
 
 export default function Authentication({ onSuccess }: AuthenticationProps) {
   const [activeTab, setActiveTab] = useState<'login' | 'register'>('login');
+
+  // Loader state for stadium assembly animation on login/register success
+  const [authPending, setAuthPending] = useState<{
+    player: RegisteredPlayer;
+    rememberMe: boolean;
+    mode: 'login' | 'register';
+  } | null>(null);
 
   // Toast state for short-lived error/notification messages
   const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -139,7 +147,11 @@ export default function Authentication({ onSuccess }: AuthenticationProps) {
         } else {
           localStorage.removeItem('score_master_remembered_credentials');
         }
-        onSuccess(res.data, rememberMe);
+        setAuthPending({
+          player: res.data,
+          rememberMe,
+          mode: 'login',
+        });
       } else {
         showToast(res.error || 'Invalid username or password.');
       }
@@ -192,7 +204,11 @@ export default function Authentication({ onSuccess }: AuthenticationProps) {
         } else {
           localStorage.removeItem('score_master_remembered_credentials');
         }
-        onSuccess(res.data, rememberMe);
+        setAuthPending({
+          player: res.data,
+          rememberMe,
+          mode: 'register',
+        });
       } else {
         showToast(res.error || 'Registration failed.');
       }
@@ -204,7 +220,18 @@ export default function Authentication({ onSuccess }: AuthenticationProps) {
   };
 
   return (
-    <div className="min-h-screen bg-linear-to-b from-slate-950 via-blue-950 to-slate-950 text-white flex flex-col justify-start pt-10 sm:pt-14 p-4 relative overflow-hidden">
+    <>
+      {authPending && (
+        <StadiumAssemblyLoader
+          mode={authPending.mode}
+          playerName={`${authPending.player.firstName} ${authPending.player.lastName}`}
+          onComplete={() => {
+            onSuccess(authPending.player, authPending.rememberMe);
+          }}
+        />
+      )}
+
+      <div className="min-h-screen bg-linear-to-b from-slate-950 via-blue-950 to-slate-950 text-white flex flex-col justify-start pt-10 sm:pt-14 p-4 relative overflow-hidden">
       {/* Ambient background glows */}
       <div className="absolute -top-24 -left-24 w-80 h-80 bg-blue-600/15 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute top-1/3 -right-28 w-80 h-80 bg-indigo-600/15 rounded-full blur-3xl pointer-events-none" />
@@ -505,5 +532,6 @@ export default function Authentication({ onSuccess }: AuthenticationProps) {
         </div>
       </div>
     </div>
+    </>
   );
 }
