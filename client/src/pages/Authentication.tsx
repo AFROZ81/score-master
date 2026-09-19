@@ -4,7 +4,7 @@ import { playerAPI } from '../services/api';
 import { User, Lock, CheckCircle, AlertCircle, Search, LogIn, UserPlus, Eye, EyeOff } from 'lucide-react';
 
 interface AuthenticationProps {
-  onSuccess: (player: RegisteredPlayer) => void;
+  onSuccess: (player: RegisteredPlayer, rememberMe?: boolean) => void;
 }
 
 export default function Authentication({ onSuccess }: AuthenticationProps) {
@@ -29,6 +29,7 @@ export default function Authentication({ onSuccess }: AuthenticationProps) {
   const [loginUsername, setLoginUsername] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
   const [showLoginPassword, setShowLoginPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(true);
   const [isLoggingIn, setIsLoggingIn] = useState(false);
 
   // Register form state
@@ -115,7 +116,7 @@ export default function Authentication({ onSuccess }: AuthenticationProps) {
       });
 
       if (res.success && res.data) {
-        onSuccess(res.data);
+        onSuccess(res.data, rememberMe);
       } else {
         showToast(res.error || 'Invalid username or password.');
       }
@@ -160,7 +161,7 @@ export default function Authentication({ onSuccess }: AuthenticationProps) {
       });
 
       if (res.success && res.data) {
-        onSuccess(res.data);
+        onSuccess(res.data, rememberMe);
       } else {
         showToast(res.error || 'Registration failed.');
       }
@@ -275,6 +276,27 @@ export default function Authentication({ onSuccess }: AuthenticationProps) {
                     {showLoginPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                   </button>
                 </div>
+              </div>
+
+              {/* Remember Me Toggle Switch */}
+              <div className="flex items-center justify-between pt-1">
+                <span className="text-xs font-semibold text-slate-300">Remember Me</span>
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={rememberMe}
+                  onClick={() => setRememberMe(!rememberMe)}
+                  className={`inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 focus:ring-offset-slate-900 ${
+                    rememberMe ? 'bg-blue-600' : 'bg-slate-700'
+                  }`}
+                >
+                  <span
+                    aria-hidden="true"
+                    className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out ${
+                      rememberMe ? 'translate-x-4' : 'translate-x-0'
+                    }`}
+                  />
+                </button>
               </div>
 
               <button

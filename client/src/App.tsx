@@ -64,36 +64,43 @@ function App() {
   }, [profileToast]);
 
   const [currentUser, setCurrentUser] = useState<RegisteredPlayer | null>(() => {
-    // Stricter authentication: if landing on the root page ('/'), do not restore session.
-    // The user must pass through the authentication stage again.
-    if (window.location.pathname === '/' || window.location.pathname === '') {
-      try {
-        localStorage.removeItem('score_master_user');
-      } catch {
-        // ignore
-      }
-      return null;
-    }
-
     try {
-      const saved = localStorage.getItem('score_master_user');
-      return saved ? JSON.parse(saved) : null;
+      const savedLocal = localStorage.getItem('score_master_user');
+      if (savedLocal) return JSON.parse(savedLocal);
+      const savedSession = sessionStorage.getItem('score_master_user');
+      if (savedSession) return JSON.parse(savedSession);
+      return null;
     } catch {
       return null;
     }
   });
 
+  // Helper to save user session based on rememberMe preference
+  const saveUserSession = (user: RegisteredPlayer | null, rememberMe: boolean = true) => {
+    try {
+      if (!user) {
+        localStorage.removeItem('score_master_user');
+        sessionStorage.removeItem('score_master_user');
+      } else if (rememberMe) {
+        localStorage.setItem('score_master_user', JSON.stringify(user));
+        sessionStorage.removeItem('score_master_user');
+      } else {
+        sessionStorage.setItem('score_master_user', JSON.stringify(user));
+        localStorage.removeItem('score_master_user');
+      }
+    } catch (err) {
+      console.error('Failed to sync user session in storage:', err);
+    }
+  };
+
   // Initialize view from URL
   const [currentView, setCurrentView] = useState<View>(() => {
     const initialView = getViewFromPath(window.location.pathname);
-    // If on root page, always remain on hero requiring fresh login
-    if (initialView === 'hero') {
-      return 'hero';
-    }
     // If not authenticated and trying to access protected views, route to auth
     try {
-      const saved = localStorage.getItem('score_master_user');
-      const user = saved ? JSON.parse(saved) : null;
+      const savedLocal = localStorage.getItem('score_master_user');
+      const savedSession = sessionStorage.getItem('score_master_user');
+      const user = savedLocal || savedSession ? JSON.parse(savedLocal || savedSession!) : null;
       if (!user && ['profile', 'live', 'create', 'players', 'teams'].includes(initialView)) {
         return 'auth';
       }
@@ -105,16 +112,6 @@ function App() {
 
   // Sync window URL with currentView using history API
   const navigateToView = useCallback((newView: View, replace = false) => {
-    // If user navigates to the root/hero page, clear session so they must pass through authentication again
-    if (newView === 'hero') {
-      setCurrentUser(null);
-      try {
-        localStorage.removeItem('score_master_user');
-      } catch (err) {
-        console.error('Failed to clear session on root navigation:', err);
-      }
-    }
-
     const targetPath = VIEW_TO_PATH[newView] || '/';
     if (window.location.pathname !== targetPath) {
       if (replace) {
@@ -131,24 +128,18 @@ function App() {
     const handlePopState = () => {
       const viewFromUrl = getViewFromPath(window.location.pathname);
       
-      // If user travels back to root/hero with browser back arrow:
       if (viewFromUrl === 'hero') {
-        setCurrentUser(null);
-        try {
-          localStorage.removeItem('score_master_user');
-        } catch (err) {
-          console.error('Failed to clear session on popstate root:', err);
-        }
         setCurrentView('hero');
         return;
       }
 
-      // Check fresh session state from localStorage or in-memory
+      // Check fresh session state from storage or in-memory
       let activeUser = currentUser;
       if (!activeUser) {
         try {
-          const saved = localStorage.getItem('score_master_user');
-          activeUser = saved ? JSON.parse(saved) : null;
+          const savedLocal = localStorage.getItem('score_master_user');
+          const savedSession = sessionStorage.getItem('score_master_user');
+          activeUser = savedLocal || savedSession ? JSON.parse(savedLocal || savedSession!) : null;
         } catch {
           activeUser = null;
         }
@@ -295,11 +286,7 @@ function App() {
 
   const handleLogout = () => {
     setCurrentUser(null);
-    try {
-      localStorage.removeItem('score_master_user');
-    } catch (err) {
-      console.error('Failed to remove user session:', err);
-    }
+    saveUserSession(null);
     setShowLogoutModal(false);
     navigateToView('auth');
   };
@@ -365,13 +352,9 @@ function App() {
         {/* If user is not authenticated and is on any protected route, show Authentication screen */}
         {!currentUser && currentView !== 'hero' && currentView !== 'auth' ? (
           <Authentication
-            onSuccess={(player) => {
+            onSuccess={(player, rememberMe) => {
               setCurrentUser(player);
-              try {
-                localStorage.setItem('score_master_user', JSON.stringify(player));
-              } catch (err) {
-                console.error('Failed to save user session:', err);
-              }
+              saveUserSession(player, rememberMe);
               navigateToView('profile');
             }}
           />
@@ -383,11 +366,8 @@ function App() {
                 onLogout={() => setShowLogoutModal(true)}
                 onUpdateUser={(updated) => {
                   setCurrentUser(updated);
-                  try {
-                    localStorage.setItem('score_master_user', JSON.stringify(updated));
-                  } catch (err) {
-                    console.error('Failed to sync updated user in localStorage:', err);
-                  }
+                  const isRemembered = !!localStorage.getItem('score_master_user');
+                  saveUserSession(updated, isRemembered);
                 }}
               />
             )}
@@ -457,13 +437,9 @@ function App() {
 
             {currentView === 'auth' && (
               <Authentication
-                onSuccess={(player) => {
+                onSuccess={(player, rememberMe) => {
                   setCurrentUser(player);
-                  try {
-                    localStorage.setItem('score_master_user', JSON.stringify(player));
-                  } catch (err) {
-                    console.error('Failed to save user session:', err);
-                  }
+                  saveUserSession(player, rememberMe);
                   navigateToView('profile');
                 }}
               />
