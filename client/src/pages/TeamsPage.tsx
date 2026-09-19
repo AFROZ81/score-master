@@ -498,6 +498,7 @@ export default function TeamsPage({
               const involvedCount = team.involvedPlayerIds?.length || 0;
               const matchesPlayed = team.matchHistory?.played || 0;
               const matchesWon = team.matchHistory?.won || 0;
+              const matchesAbandoned = team.matchHistory?.abandoned || 0;
               const isCreator = Boolean(currentUser?.id && team.creatorId === currentUser.id);
 
               return (
@@ -566,7 +567,7 @@ export default function TeamsPage({
                     <div>
                       <span className="text-[10px] text-gray-400 dark:text-slate-400 block">Win %</span>
                       <span className="font-bold text-blue-600 dark:text-blue-400">
-                        {matchesPlayed > 0 ? Math.round((matchesWon / matchesPlayed) * 100) : 0}%
+                        {matchesPlayed > 0 ? Math.round((matchesWon / (matchesPlayed - matchesAbandoned)) * 100) : 0}%
                       </span>
                     </div>
                   </div>

@@ -120,7 +120,7 @@ export default function ProfilePage({ currentUser, onLogout, onUpdateUser }: Pro
   const won = matchHistory.won || 0;
   const lost = matchHistory.lost || 0;
   const abandoned = matchHistory.abandoned || 0;
-  const winRate = played > 0 ? ((won / played) * 100).toFixed(0) : '0';
+  const winRate = played > 0 ? ((won / (played - abandoned)) * 100).toFixed(0) : '0';
 
   return (
     <div className="space-y-3">
