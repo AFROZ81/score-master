@@ -93,16 +93,25 @@ function App() {
     }
   };
 
-  // Initialize view from URL
+  // Initialize view from URL or session
   const [currentView, setCurrentView] = useState<View>(() => {
     const initialView = getViewFromPath(window.location.pathname);
-    // If not authenticated and trying to access protected views, route to auth
     try {
       const savedLocal = localStorage.getItem('score_master_user');
       const savedSession = sessionStorage.getItem('score_master_user');
       const user = savedLocal || savedSession ? JSON.parse(savedLocal || savedSession!) : null;
-      if (!user && ['profile', 'live', 'create', 'players', 'teams'].includes(initialView)) {
-        return 'auth';
+      
+      if (user) {
+        // If user is already logged in and lands on root '/' (hero), auto-navigate to their profile page
+        if (initialView === 'hero') {
+          return 'profile';
+        }
+        return initialView;
+      } else {
+        // If not logged in and accessing protected pages, route to auth
+        if (['profile', 'live', 'create', 'players', 'teams', 'scorecard', 'commentary'].includes(initialView)) {
+          return 'auth';
+        }
       }
     } catch {
       // fallback

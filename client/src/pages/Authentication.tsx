@@ -99,6 +99,21 @@ export default function Authentication({ onSuccess }: AuthenticationProps) {
     }
   };
 
+  // Load remembered credentials on mount if available
+  useEffect(() => {
+    try {
+      const savedCreds = localStorage.getItem('score_master_remembered_credentials');
+      if (savedCreds) {
+        const { username, password } = JSON.parse(savedCreds);
+        if (username) setLoginUsername(username);
+        if (password) setLoginPassword(password);
+        setRememberMe(true);
+      }
+    } catch (err) {
+      console.error('Failed to load remembered credentials:', err);
+    }
+  }, []);
+
   // Login submission
   const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -116,6 +131,14 @@ export default function Authentication({ onSuccess }: AuthenticationProps) {
       });
 
       if (res.success && res.data) {
+        if (rememberMe) {
+          localStorage.setItem('score_master_remembered_credentials', JSON.stringify({
+            username: loginUsername.trim(),
+            password: loginPassword,
+          }));
+        } else {
+          localStorage.removeItem('score_master_remembered_credentials');
+        }
         onSuccess(res.data, rememberMe);
       } else {
         showToast(res.error || 'Invalid username or password.');
@@ -161,6 +184,14 @@ export default function Authentication({ onSuccess }: AuthenticationProps) {
       });
 
       if (res.success && res.data) {
+        if (rememberMe) {
+          localStorage.setItem('score_master_remembered_credentials', JSON.stringify({
+            username: cleanUsername,
+            password: regPassword,
+          }));
+        } else {
+          localStorage.removeItem('score_master_remembered_credentials');
+        }
         onSuccess(res.data, rememberMe);
       } else {
         showToast(res.error || 'Registration failed.');

@@ -2087,10 +2087,10 @@ class ScoringEngine {
   }
 
   getRunCommentary(runs, batsman, bowler) {
-    if (runs === 0) return `No run. ${bowler} to ${batsman}`;
+    if (runs === 0) return `No run. Good bowling.`;
     if (runs === 4) return `FOUR! ${batsman} finds the boundary`;
     if (runs === 6) return `SIX! ${batsman} goes big!`;
-    return `${runs} run${runs > 1 ? 's' : ''}. ${bowler} to ${batsman}`;
+    return `${runs} run${runs > 1 ? 's' : ''}. Good running b/w the wickets.`;
   }
 
   generateWicketCommentary(dismissalType, batsman, bowler, fielder, batsmanPosition, fielderNames, runsScored, runOutEnd) {
@@ -2100,11 +2100,11 @@ class ScoringEngine {
 
     switch (dismissalType) {
       case 'bowled':
-        return `OUT! ${batsman} is bowled by ${bowler}! The stumps are shattered!`;
+        return `OUT! ${batsman} is bowled by ${bowler}! The stumps are rattled!`;
       case 'caught': {
         const isCaughtAndBowled = fieldersDisplay && bowler && fieldersDisplay.trim().toLowerCase() === bowler.trim().toLowerCase();
         if (isCaughtAndBowled) {
-          return `OUT! ${batsman} is caught and bowled by ${bowler}! Great catch!`;
+          return `OUT! ${batsman} is caught and bowled by ${bowler}! Great reflex catch!`;
         }
         return `OUT! ${batsman} is caught by ${fieldersDisplay || 'a fielder'} off ${bowler}! Great catch!`;
       }
